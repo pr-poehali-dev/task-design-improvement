@@ -36,9 +36,9 @@ interface Task {
 }
 
 const statusConfig = {
-  pending: { label: 'В ожидании', icon: 'Circle' },
-  'in-progress': { label: 'В работе', icon: 'CircleDot' },
-  completed: { label: 'Завершено', icon: 'CheckCircle2' },
+  pending: { label: 'В ожидании', icon: 'Circle', color: 'text-muted-foreground' },
+  'in-progress': { label: 'В работе', icon: 'CircleDot', color: 'text-foreground' },
+  completed: { label: 'Завершено', icon: 'CheckCircle2', color: 'text-foreground' },
 };
 
 const Index = () => {
@@ -51,15 +51,19 @@ const Index = () => {
       subtasks: [
         { id: '1-1', title: 'Выбрать цветовую палитру', completed: true },
         { id: '1-2', title: 'Создать компоненты', completed: false },
+        { id: '1-3', title: 'Написать документацию', completed: false },
       ],
-      expanded: false,
+      expanded: true,
     },
     {
       id: '2',
       title: 'Настроить CI/CD',
       status: 'pending',
       tags: ['разработка'],
-      subtasks: [],
+      subtasks: [
+        { id: '2-1', title: 'Настроить GitHub Actions', completed: false },
+        { id: '2-2', title: 'Добавить тесты', completed: false },
+      ],
       expanded: false,
     },
   ]);
@@ -162,6 +166,20 @@ const Index = () => {
     setTasks(tasks.filter((task) => task.id !== taskId));
   };
 
+  const deleteSubtask = (taskId: string, subtaskId: string) => {
+    setTasks(
+      tasks.map((task) => {
+        if (task.id === taskId) {
+          return {
+            ...task,
+            subtasks: task.subtasks.filter((st) => st.id !== subtaskId),
+          };
+        }
+        return task;
+      })
+    );
+  };
+
   const filteredTasks = tasks.filter((task) => {
     const matchesTag = filterTag === 'all' || task.tags.includes(filterTag);
     const matchesStatus = filterStatus === 'all' || task.status === filterStatus;
@@ -177,7 +195,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto p-6 space-y-6">
+      <div className="max-w-5xl mx-auto p-6 space-y-6">
         <header className="space-y-2">
           <h1 className="text-3xl font-semibold tracking-tight text-foreground">
             Задачи
@@ -234,7 +252,7 @@ const Index = () => {
           </div>
         </Card>
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           {filteredTasks.map((task) => (
             <TaskCard
               key={task.id}
@@ -248,6 +266,7 @@ const Index = () => {
               onAddSubtask={(title) => addSubtask(task.id, title)}
               onToggleTag={(tagName) => toggleTag(task.id, tagName)}
               onDelete={() => deleteTask(task.id)}
+              onDeleteSubtask={(subtaskId) => deleteSubtask(task.id, subtaskId)}
             />
           ))}
 
@@ -272,6 +291,7 @@ interface TaskCardProps {
   onAddSubtask: (title: string) => void;
   onToggleTag: (tagName: string) => void;
   onDelete: () => void;
+  onDeleteSubtask: (subtaskId: string) => void;
 }
 
 const TaskCard = ({
@@ -283,6 +303,7 @@ const TaskCard = ({
   onAddSubtask,
   onToggleTag,
   onDelete,
+  onDeleteSubtask,
 }: TaskCardProps) => {
   const [subtaskInput, setSubtaskInput] = useState('');
   const [showTagMenu, setShowTagMenu] = useState(false);
@@ -299,149 +320,172 @@ const TaskCard = ({
   const totalSubtasks = task.subtasks.length;
 
   return (
-    <Card className="p-4 space-y-3 border shadow-sm hover:shadow transition-shadow">
-      <div className="flex items-start gap-3">
-        <button
-          onClick={onToggleExpanded}
-          className="mt-1 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <Icon
-            name={task.expanded ? 'ChevronDown' : 'ChevronRight'}
-            size={20}
-          />
-        </button>
+    <div className="space-y-0">
+      <Card className="p-5 border-2 shadow-sm hover:shadow-md transition-all bg-card">
+        <div className="flex items-start gap-4">
+          <button
+            onClick={onToggleExpanded}
+            className="mt-0.5 text-muted-foreground hover:text-foreground transition-colors shrink-0"
+          >
+            <Icon
+              name={task.expanded ? 'ChevronDown' : 'ChevronRight'}
+              size={22}
+            />
+          </button>
 
-        <div className="flex-1 space-y-2">
-          <div className="flex items-start justify-between gap-3">
-            <h3 className="text-base font-medium text-foreground leading-tight">
-              {task.title}
-            </h3>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-destructive"
-              onClick={onDelete}
-            >
-              <Icon name="Trash2" size={16} />
-            </Button>
-          </div>
-
-          <div className="flex items-center gap-2 flex-wrap">
-            <Select value={task.status} onValueChange={(v) => onUpdateStatus(v as TaskStatus)}>
-              <SelectTrigger className="w-[140px] h-8 text-xs">
-                <div className="flex items-center gap-1.5">
-                  <Icon name={statusInfo.icon} size={14} />
-                  <span>{statusInfo.label}</span>
+          <div className="flex-1 space-y-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-1.5 flex-1">
+                <h3 className="text-lg font-semibold text-foreground leading-tight">
+                  {task.title}
+                </h3>
+                <div className="text-xs text-muted-foreground">
+                  Основная задача {totalSubtasks > 0 && `• ${completedSubtasks}/${totalSubtasks} выполнено`}
                 </div>
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(statusConfig).map(([key, config]) => (
-                  <SelectItem key={key} value={key}>
-                    <div className="flex items-center gap-2">
-                      <Icon name={config.icon} size={14} />
-                      <span>{config.label}</span>
-                    </div>
-                  </SelectItem>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
+                onClick={onDelete}
+              >
+                <Icon name="Trash2" size={16} />
+              </Button>
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              <Select value={task.status} onValueChange={(v) => onUpdateStatus(v as TaskStatus)}>
+                <SelectTrigger className="w-[150px] h-9 text-sm border-2">
+                  <div className="flex items-center gap-2">
+                    <Icon name={statusInfo.icon} size={16} className={statusInfo.color} />
+                    <span>{statusInfo.label}</span>
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(statusConfig).map(([key, config]) => (
+                    <SelectItem key={key} value={key}>
+                      <div className="flex items-center gap-2">
+                        <Icon name={config.icon} size={16} className={config.color} />
+                        <span>{config.label}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {task.tags.map((tagName) => (
+                  <Badge
+                    key={tagName}
+                    variant="secondary"
+                    className="text-xs cursor-pointer hover:bg-accent px-2.5 py-1"
+                    onClick={() => onToggleTag(tagName)}
+                  >
+                    {tagName}
+                    <Icon name="X" size={12} className="ml-1.5" />
+                  </Badge>
                 ))}
-              </SelectContent>
-            </Select>
-
-            {totalSubtasks > 0 && (
-              <span className="text-xs text-muted-foreground">
-                {completedSubtasks}/{totalSubtasks} подзадач
-              </span>
-            )}
-
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {task.tags.map((tagName) => (
-                <Badge
-                  key={tagName}
-                  variant="secondary"
-                  className="text-xs cursor-pointer hover:bg-accent"
-                  onClick={() => onToggleTag(tagName)}
-                >
-                  {tagName}
-                  <Icon name="X" size={12} className="ml-1" />
-                </Badge>
-              ))}
-              
-              <div className="relative">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 px-2 text-xs text-muted-foreground"
-                  onClick={() => setShowTagMenu(!showTagMenu)}
-                >
-                  <Icon name="Tag" size={12} className="mr-1" />
-                  Тег
-                </Button>
                 
-                {showTagMenu && (
-                  <Card className="absolute top-full left-0 mt-1 p-2 space-y-1 z-10 min-w-[140px] shadow-lg">
-                    {availableTags.map((tag) => (
-                      <button
-                        key={tag.id}
-                        onClick={() => {
-                          onToggleTag(tag.name);
-                          setShowTagMenu(false);
-                        }}
-                        className="w-full text-left px-2 py-1 text-xs rounded hover:bg-accent transition-colors"
-                      >
-                        {tag.name}
-                      </button>
-                    ))}
-                  </Card>
-                )}
+                <div className="relative">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2.5 text-xs text-muted-foreground hover:text-foreground"
+                    onClick={() => setShowTagMenu(!showTagMenu)}
+                  >
+                    <Icon name="Tag" size={14} className="mr-1" />
+                    Добавить тег
+                  </Button>
+                  
+                  {showTagMenu && (
+                    <Card className="absolute top-full left-0 mt-1 p-2 space-y-1 z-10 min-w-[160px] shadow-lg border-2">
+                      {availableTags.map((tag) => (
+                        <button
+                          key={tag.id}
+                          onClick={() => {
+                            onToggleTag(tag.name);
+                            setShowTagMenu(false);
+                          }}
+                          className="w-full text-left px-3 py-2 text-sm rounded hover:bg-accent transition-colors"
+                        >
+                          {tag.name}
+                        </button>
+                      ))}
+                    </Card>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
-      {task.expanded && (
-        <div className="pl-8 space-y-2 animate-accordion-down">
-          {task.subtasks.map((subtask) => (
+      {task.expanded && task.subtasks.length > 0 && (
+        <div className="ml-10 mt-2 space-y-1 animate-accordion-down">
+          {task.subtasks.map((subtask, index) => (
             <div
               key={subtask.id}
-              className="flex items-center gap-2 group py-1"
+              className="relative"
             >
-              <Checkbox
-                checked={subtask.completed}
-                onCheckedChange={() => onToggleSubtask(subtask.id)}
-                className="mt-0.5"
-              />
-              <span
-                className={`text-sm ${
-                  subtask.completed
-                    ? 'line-through text-muted-foreground'
-                    : 'text-foreground'
-                }`}
-              >
-                {subtask.title}
-              </span>
+              <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-border" style={{ left: '11px' }} />
+              <div className="absolute left-0 top-1/2 w-6 h-0.5 bg-border" style={{ left: '11px' }} />
+              
+              <Card className="ml-6 p-3 bg-muted/30 border hover:bg-muted/50 transition-colors">
+                <div className="flex items-center gap-3 group">
+                  <Checkbox
+                    checked={subtask.completed}
+                    onCheckedChange={() => onToggleSubtask(subtask.id)}
+                    className="shrink-0"
+                  />
+                  <span
+                    className={`text-sm flex-1 ${
+                      subtask.completed
+                        ? 'line-through text-muted-foreground'
+                        : 'text-foreground'
+                    }`}
+                  >
+                    {subtask.title}
+                  </span>
+                  <span className="text-xs text-muted-foreground mr-1">
+                    Подзадача {index + 1}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive shrink-0"
+                    onClick={() => onDeleteSubtask(subtask.id)}
+                  >
+                    <Icon name="X" size={14} />
+                  </Button>
+                </div>
+              </Card>
             </div>
           ))}
+        </div>
+      )}
 
-          <div className="flex gap-2 pt-1">
+      {task.expanded && (
+        <div className="ml-10 mt-2">
+          <div className="ml-6 flex gap-2">
             <Input
-              placeholder="Новая подзадача..."
+              placeholder="Добавить подзадачу..."
               value={subtaskInput}
               onChange={(e) => setSubtaskInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddSubtask()}
-              className="h-8 text-sm"
+              className="h-9 text-sm bg-background"
             />
             <Button
               onClick={handleAddSubtask}
               size="sm"
               variant="ghost"
-              className="h-8"
+              className="h-9 px-3"
             >
               <Icon name="Plus" size={16} />
             </Button>
           </div>
         </div>
       )}
-    </Card>
+    </div>
   );
 };
 
