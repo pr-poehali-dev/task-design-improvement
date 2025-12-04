@@ -40,9 +40,9 @@ interface Task {
 }
 
 const statusConfig = {
-  pending: { label: 'В ожидании', icon: 'Circle', bgColor: 'bg-white', borderColor: 'border-orange-300', iconColor: 'text-orange-400' },
-  'in-progress': { label: 'В работе', icon: 'Circle', bgColor: 'bg-orange-400', borderColor: 'border-orange-500', iconColor: 'text-white' },
-  completed: { label: 'Завершено', icon: 'Check', bgColor: 'bg-orange-500', borderColor: 'border-orange-600', iconColor: 'text-white' },
+  pending: { label: 'В ожидании', icon: 'Circle', bgColor: 'bg-slate-800', borderColor: 'border-purple-500/50', iconColor: 'text-purple-400' },
+  'in-progress': { label: 'В работе', icon: 'Circle', bgColor: 'bg-purple-600', borderColor: 'border-purple-500', iconColor: 'text-white' },
+  completed: { label: 'Завершено', icon: 'Check', bgColor: 'bg-emerald-600', borderColor: 'border-emerald-500', iconColor: 'text-white' },
 };
 
 const Index = () => {
@@ -161,11 +161,11 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FEF8F0] p-8">
+    <div className="min-h-screen bg-slate-950 p-8">
       <div className="max-w-[1400px] mx-auto space-y-8">
         <header className="flex items-center justify-between">
-          <h1 className="text-3xl font-semibold text-foreground">Задачи</h1>
-          <Button onClick={addNewTask} className="bg-orange-500 hover:bg-orange-600 text-white">
+          <h1 className="text-3xl font-semibold text-white">Задачи</h1>
+          <Button onClick={addNewTask} className="bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-500/30">
             <Icon name="Plus" size={18} className="mr-2" />
             Добавить задачу
           </Button>
@@ -301,7 +301,7 @@ const TaskTreeNode = ({
         
         <button
           onClick={onNodeClick}
-          className="bg-white border-2 border-orange-200 rounded-full px-5 py-2 text-sm font-medium hover:bg-orange-50 hover:border-orange-300 transition-all shadow-sm min-w-[100px]"
+          className="bg-slate-800 border-2 border-purple-500/30 rounded-full px-5 py-2 text-sm font-medium text-slate-100 hover:bg-slate-700 hover:border-purple-500/50 transition-all shadow-lg shadow-purple-500/10 min-w-[100px]"
         >
           {node.title}
         </button>
@@ -309,7 +309,7 @@ const TaskTreeNode = ({
         {!showAddInput && (
           <button
             onClick={() => setShowAddInput(true)}
-            className="text-xs text-orange-400 hover:text-orange-600 transition-colors font-medium"
+            className="text-xs text-purple-400 hover:text-purple-300 transition-colors font-medium"
           >
             + подзадача
           </button>
@@ -329,7 +329,7 @@ const TaskTreeNode = ({
               autoFocus
             />
             <div className="flex gap-1">
-              <Button size="sm" onClick={handleAddSubtask} className="h-7 px-3 bg-orange-500 hover:bg-orange-600">
+              <Button size="sm" onClick={handleAddSubtask} className="h-7 px-3 bg-purple-600 hover:bg-purple-700">
                 <Icon name="Check" size={14} />
               </Button>
               <Button 
@@ -360,8 +360,8 @@ const TaskTreeNode = ({
               >
                 <defs>
                   <linearGradient id={`gradient-${node.id}-${index}`} x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" style={{ stopColor: '#FDB777', stopOpacity: 0.6 }} />
-                    <stop offset="100%" style={{ stopColor: '#FDB777', stopOpacity: 0.8 }} />
+                    <stop offset="0%" style={{ stopColor: '#A78BFA', stopOpacity: 0.4 }} />
+                    <stop offset="100%" style={{ stopColor: '#8B5CF6', stopOpacity: 0.6 }} />
                   </linearGradient>
                 </defs>
                 <path
@@ -376,12 +376,12 @@ const TaskTreeNode = ({
                   y1="60"
                   x2="140"
                   y2="60"
-                  stroke="#FDB777"
+                  stroke="#8B5CF6"
                   strokeWidth="3"
-                  opacity="0.5"
+                  opacity="0.4"
                   strokeDasharray="6,4"
                 />
-                <circle cx="140" cy="60" r="5" fill="#FB923C" />
+                <circle cx="140" cy="60" r="5" fill="#A78BFA" opacity="0.8" />
               </svg>
 
               <TaskTreeNode
