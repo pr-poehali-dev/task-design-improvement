@@ -162,7 +162,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 p-8">
-      <div className="max-w-[1400px] mx-auto space-y-8">
+      <div className="w-full space-y-8">
         <header className="flex items-center justify-between">
           <h1 className="text-3xl font-semibold text-white">Задачи</h1>
           <Button onClick={addNewTask} className="bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-500/30">
@@ -171,9 +171,9 @@ const Index = () => {
           </Button>
         </header>
 
-        <div className="space-y-16">
+        <div className="space-y-16 w-full overflow-x-auto">
           {tasks.map((task) => (
-            <div key={task.id} className="relative pl-8">
+            <div key={task.id} className="relative pl-8 min-w-max">
               <TaskTreeNode
                 task={task}
                 node={{ id: task.id, title: task.title, status: task.status, subtasks: task.subtasks }}
